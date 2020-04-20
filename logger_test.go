@@ -5,25 +5,27 @@
 * Software: GoLand
  */
 
-package logger
+package logger_test
 
 import (
 	"testing"
 
-
+	logger "github.com/golearnku/sdk-zap"
 	"go.uber.org/zap"
 )
 
 func TestMain(t *testing.M) {
-	New(SetEnv("dev"), SetPath("./log"))
+	logger.New(logger.SetEnv("dev"), logger.SetPath("./log"))
 	t.Run()
 }
 
 func TestGetLogger(t *testing.T) {
-	Logger().Info("msg",zap.String("uid","abc"))
-	Logger().Debug("debug",zap.String("uid","abc"))
-	Logger().Error("error",zap.String("uid","abc"))
-	Logger("goim").Info("info",zap.String("uid","abc"))
-	Logger("goim").Error("error",zap.String("uid","abc"))
-	Logger("goim").Debug("debug",zap.String("uid","abc"))
+	logger.Logger().Info("msg", zap.String("uid", "abc"))
+	logger.Logger().Debug("debug", zap.String("uid", "abc"))
+	logger.Logger().Error("error", zap.String("uid", "abc"))
+
+	// 多实例日志
+	logger.Logger("goim").Info("info", zap.String("uid", "abc"))
+	logger.Logger("goim").Error("error", zap.String("uid", "abc"))
+	logger.Logger("goim").Debug("debug", zap.String("uid", "abc"))
 }
