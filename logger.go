@@ -1,10 +1,3 @@
-/**
-* Author: JeffreyBool
-* Date: 2020/4/20
-* Time: 12:26
-* Software: GoLand
- */
-
 package logger
 
 import (
@@ -27,6 +20,7 @@ type logger struct {
 	any  *sync.Map
 }
 
+// New 初始化日志实例
 func New(opts ...Option) *logger {
 	o := options{}
 	for _, opt := range opts {
@@ -42,6 +36,7 @@ func New(opts ...Option) *logger {
 	return ii
 }
 
+// Logger 获取日志实例
 func Logger(arg ...string) *zap.Logger {
 	if ii == nil {
 		panic("logger is not initialized")
@@ -72,18 +67,26 @@ func newLogger(filename string) (logger *zap.Logger, err error) {
 	}
 
 	var zConf zap.Config
-	if ii.opts.env == "online" {
-		zConf = NewProductionConfig(filename)
+	if ii.opts.debug {
+		zConf = newDevelopmentConfig(filename)
 	} else {
-		zConf = NewDevelopmentConfig(filename)
+		zConf = newProductionConfig(filename)
 	}
 	return NewLogger(zConf)
 }
 
-func NewProductionConfig(filename string) zap.Config {
+func newProductionConfig(filename string) zap.Config {
 	encoderConfig := zap.NewProductionEncoderConfig()
 	encoderConfig.EncodeTime = encodeTime
 	encoderConfig.EncodeDuration = zapcore.StringDurationEncoder
+	var outputPaths, errorOutputPaths []string
+	if ii.opts.output {
+		outputPaths = []string{"stdout", filepath.Join(ii.opts.path, filename) + ".out.log"}
+		errorOutputPaths = []string{"stderr", filepath.Join(ii.opts.path, filename) + ".error.log"}
+	} else {
+		outputPaths = []string{filepath.Join(ii.opts.path, filename) + ".out.log"}
+		errorOutputPaths = []string{filepath.Join(ii.opts.path, filename) + ".error.log"}
+	}
 	return zap.Config{
 		Development:       false,
 		DisableCaller:     true,
@@ -91,14 +94,22 @@ func NewProductionConfig(filename string) zap.Config {
 		Level:             zap.NewAtomicLevelAt(zapcore.InfoLevel),
 		Encoding:          "json",
 		EncoderConfig:     encoderConfig,
-		OutputPaths:       []string{"stdout", filepath.Join(ii.opts.path, filename) + ".out.log"},
-		ErrorOutputPaths:  []string{"stderr", filepath.Join(ii.opts.path, filename) + ".error.log"},
+		OutputPaths:       outputPaths,
+		ErrorOutputPaths:  errorOutputPaths,
 	}
 }
 
-func NewDevelopmentConfig(filename string) zap.Config {
+func newDevelopmentConfig(filename string) zap.Config {
 	encoderConfig := zap.NewDevelopmentEncoderConfig()
 	encoderConfig.EncodeTime = encodeTime
+	var outputPaths, errorOutputPaths []string
+	if ii.opts.output {
+		outputPaths = []string{"stdout", filepath.Join(ii.opts.path, filename) + ".out.log"}
+		errorOutputPaths = []string{"stderr", filepath.Join(ii.opts.path, filename) + ".error.log"}
+	} else {
+		outputPaths = []string{filepath.Join(ii.opts.path, filename) + ".out.log"}
+		errorOutputPaths = []string{filepath.Join(ii.opts.path, filename) + ".error.log"}
+	}
 	return zap.Config{
 		Development:       true,
 		DisableCaller:     true,
@@ -106,8 +117,8 @@ func NewDevelopmentConfig(filename string) zap.Config {
 		Level:             zap.NewAtomicLevelAt(zapcore.DebugLevel),
 		Encoding:          "json",
 		EncoderConfig:     encoderConfig,
-		OutputPaths:       []string{"stdout", filepath.Join(ii.opts.path, filename) + ".out.log"},
-		ErrorOutputPaths:  []string{"stderr", filepath.Join(ii.opts.path, filename) + ".error.log"},
+		OutputPaths:       outputPaths,
+		ErrorOutputPaths:  errorOutputPaths,
 	}
 }
 

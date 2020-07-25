@@ -1,10 +1,3 @@
-/**
-* Author: JeffreyBool
-* Date: 2020/4/20
-* Time: 12:27
-* Software: GoLand
- */
-
 package logger
 
 import (
@@ -18,7 +11,7 @@ import (
 
 var errEncodingNotSupported = errors.New("encoding not supported")
 
-// New is similar to Config.Build except that info and error logs are separated
+// NewLogger New is similar to Config.Build except that info and error logs are separated
 // only json/console encoder is supported (zap doesn't provide a way to refer to other encoders)
 func NewLogger(cfg zap.Config) (logger *zap.Logger, err error) {
 	sink, errSink, err := openSinks(cfg)
